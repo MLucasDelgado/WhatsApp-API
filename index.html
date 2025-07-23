@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Notificaciones WhatsApp</title>
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>Notificaciones WhatsApp en tiempo real</h1>
+
+  <div id="notifications"></div>
+
+  <script>
+    // Conectar al servidor socket.io (ajustar URL/puerto)
+    const socket = io('http://localhost:3001');
+
+    const container = document.getElementById('notifications');
+
+    socket.on('connect', () => {
+      console.log('Conectado al websocket');
+    });
+
+    socket.on('new_message', (data) => {
+      console.log('Nuevo mensaje recibido:', data);
+
+      // Crear un div para la notificación
+      const notif = document.createElement('div');
+      notif.style.border = '1px solid #ccc';
+      notif.style.margin = '10px';
+      notif.style.padding = '10px';
+      notif.style.borderRadius = '5px';
+      notif.style.background = '#f0f0f0';
+
+      notif.innerHTML = `
+        <strong>${data.name || 'Sin nombre'}</strong><br />
+        <em>${data.message}</em><br />
+        <small>${new Date(data.timestamp).toLocaleString()}</small>
+      `;
+
+      // Agregar al contenedor
+      container.prepend(notif);
+    });
+  </script>
+</body>
+</html>
