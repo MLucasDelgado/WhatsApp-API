@@ -3,12 +3,14 @@ import { Response } from 'express';
 import { ConversationsService } from 'src/controlador-conversaciones/conversations/conversations.service';
 import { WhatsAppWebhookPayload } from './whatsapp-webhook.dto';
 import { MessagesGateway } from 'src/messages/messages.gateway';
+import { WhatsappService } from './whatsapp.service';
 
 @Controller('webhook')
 export class WebhookController {
   constructor(
     private readonly conversationsService: ConversationsService,
     private readonly gateway: MessagesGateway, 
+    private readonly whatsappService: WhatsappService,
   ) { }
 
   @Get()
@@ -84,6 +86,24 @@ export class WebhookController {
     } catch (error) {
       console.error('Error procesando mensaje:', error);
       return res.sendStatus(500);
+    }
+  }
+
+  @Post('/send')
+  async sendMessage(
+    @Body() body: { to: string; message: string },
+    @Res() res: Response,
+  ) {
+    try {
+      const { to, message } = body;
+      if (!to || !message) {
+        return res.status(400).json({ error: 'Faltan parámetros' });
+      }
+      const response = await this.whatsappService.sendMessage(to, message);
+      return res.status(200).json(response);
+    } catch (error) {
+      console.error('Error enviando mensaje:', error);
+      return res.status(500).json({ error: 'No se pudo enviar el mensaje' });
     }
   }
 }
